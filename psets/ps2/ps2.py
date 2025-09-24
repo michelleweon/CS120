@@ -58,17 +58,17 @@ class BinarySearchTree:
             left_size = self.left.size
         if ind == left_size:
             return self
-        if left_size > ind and self.left is not None:
+        elif ind < left_size and self.left is not None:
             return self.left.select(ind)
-        if left_size < ind and self.right is not None:
-            return self.right.select(ind)
+        elif ind > left_size and self.right is not None:
+            return self.right.select(ind - left_size - 1) # FIXED: correctness, when recursing to the right subtree, must skip the left subtree and current vertex
         return None
-
 
     '''
     Searches for a given key
     returns a pointer to the object with target key or None (Roughgarden)
     '''
+    # No fix needed, correct and efficient
     def search(self, key):
         if self is None:
             return None
@@ -79,7 +79,6 @@ class BinarySearchTree:
         elif self.left is not None:
             return self.left.search(key)
         return None
-    
 
     '''
     Inserts a key into the tree
@@ -99,7 +98,15 @@ class BinarySearchTree:
             if self.right is None:
                 self.right = BinarySearchTree(self.debugger)
             self.right.insert(key)
-        self.calculate_sizes()
+
+        l_size = 0
+        r_size = 0
+        if self.left is not None:
+            l_size = self.left.size
+        if self.right is not None:
+            r_size = self.right.size
+        self.size = 1 + l_size + r_size
+        # self.calculate_sizes()            FIXED: removed line here and kept track of sizes throughout insert to reduce recalculating entire tree
         return self
 
     
@@ -128,6 +135,57 @@ class BinarySearchTree:
     '''
     def rotate(self, direction, child_side):
         # Your code goes here
+        def calc_size(v):
+            if v is not None:
+                size = 1
+            else:
+                size = 0
+            if v.left is not None:
+                size += v.left.size
+            if v.right is not None:
+                size += v.right.size
+            return size
+
+        def rotate_left(v):
+            if v is None or v.right is None:
+                return v
+            y = v.right
+            temp = y.left
+            y.left = v
+            v.right = temp
+            v.size = calc_size(v)
+            y.size = calc_size(y)
+            return y
+        
+        def rotate_right(v):
+            if v is None or v.left is None:
+                return v
+            y = v.left
+            temp = y.right
+            y.right = v
+            v.left = temp
+            v.size = calc_size(v)
+            y.size = calc_size(y)
+            return y
+
+        if direction == "L":
+            if child_side == "R":
+                self.right = rotate_left(self.right)
+            elif child_side == "L":
+                self.left = rotate_left(self.left)
+            else:
+                raise ValueError
+        elif direction == "R":
+            if child_side == "R":
+                self.right = rotate_right(self.right)
+            elif child_side == "L":
+                self.left = rotate_right(self.left)
+            else:
+                raise ValueError
+        else:
+            raise ValueError
+
+        self.size = calc_size(self)
         return self
 
     def print_bst(self):
