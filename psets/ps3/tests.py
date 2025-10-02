@@ -60,6 +60,32 @@ log = [8,
             ['write', output_ptr_id, result_id],
         ]
 
+# Computes assign literal, 42
+assign_literal = [4, 
+            ['assign', output_len_id, 1], 
+            ['assign', output_ptr_id, 0], 
+            ['assign', 3, 42],
+            ['write', output_ptr_id, 3],
+        ]
+
+# Computes assign var, 3=42
+assign_var = [5, 
+            ['assign', output_len_id, 1], 
+            ['assign', output_ptr_id, 0], 
+            ['assign', 3, 42],
+            ['write', output_ptr_id, 3],
+        ]
+
+# Computes addition of two vars, 3+15=18
+add = [5, 
+            ['assign', output_len_id, 1], 
+            ['assign', output_ptr_id, 0], 
+            ['assign', 3, 3],
+            ['assign', 4, 15],
+            ['+', 3, 3, 4],
+            ['write', output_ptr_id, 3],
+        ]
+
 # Computes subtraction of two vars, returns 0 (clamped)
 minus = [5, 
             ['assign', output_len_id, 1], 
@@ -67,6 +93,16 @@ minus = [5,
             ['assign', 3, 3],
             ['assign', 4, 15],
             ['-', 3, 3, 4],
+            ['write', output_ptr_id, 3],
+        ]
+
+# Computes multiplication of two vars, 3*15=45
+multiply = [5, 
+            ['assign', output_len_id, 1], 
+            ['assign', output_ptr_id, 0], 
+            ['assign', 3, 3],
+            ['assign', 4, 15],
+            ['*', 3, 3, 4],
             ['write', output_ptr_id, 3],
         ]
 
@@ -80,13 +116,70 @@ divide = [5,
             ['write', output_ptr_id, 3],
         ]
 
+# Computes division of two vars by zero, returns 0 (clamped)
+divide_by_zero = [5, 
+            ['assign', output_len_id, 1], 
+            ['assign', output_ptr_id, 0], 
+            ['assign', 3, 3],
+            ['assign', 4, 0],
+            ['/', 3, 3, 4],
+            ['write', output_ptr_id, 3],
+        ]
+
+# Computes goto command, should not jump
+
+goto = [5, 
+            ['assign', output_len_id, 1], 
+            ['assign', output_ptr_id, 0], 
+            ['assign', 3, 0],
+            ['goto', 3, 10],
+            ['write', output_ptr_id, 3],
+        ]
+
+# Computes goto command, should jump
+goto_jump = [5, 
+            ['assign', output_len_id, 1], 
+            ['assign', output_ptr_id, 0], 
+            ['assign', 3, 1],
+            ['goto', 3, 10],
+            ['write', output_ptr_id, 3],
+        ]
+
 def test() :
     tests["Example 0: Unit Tests"] = [
+        {
+            "label": "Assign Literal",
+            "input": 0,
+            "test": lambda n: simulator.executeProgram(assign_literal, [0])[0],
+            "expected": 42,
+            "show_expectation": True
+        },
+        {
+            "label": "Assign Var",
+            "input": 0,
+            "test": lambda n: simulator.executeProgram(assign_var, [0])[0],
+            "expected": 42,
+            "show_expectation": True
+        },
+        {
+            "label": "Addition",
+            "input": 0,
+            "test": lambda n: simulator.executeProgram(add, [0])[0],
+            "expected": 18,
+            "show_expectation": True
+        },
         {
             "label": "Subtract",
             "input": 0,
             "test": lambda n: simulator.executeProgram(minus, [0])[0],
             "expected": 0,
+            "show_expectation": True
+        },
+        {
+            "label": "Multiply",
+            "input": 0,
+            "test": lambda n: simulator.executeProgram(multiply, [0])[0],
+            "expected": 45,
             "show_expectation": True
         },
         {
@@ -96,7 +189,27 @@ def test() :
             "expected": 0,
             "show_expectation": True
         },
-        # TODO: Add more test cases
+        {
+            "label": "Divide by Zero",
+            "input": 0,
+            "test": lambda n: simulator.executeProgram(divide_by_zero, [0])[0],
+            "expected": 0,
+            "show_expectation": True
+        },
+        {
+            "label": "Goto",
+            "input": 0,
+            "test": lambda n: simulator.executeProgram(goto, [0])[0],
+            "expected": 0,
+            "show_expectation": True
+        },
+        {
+            "label": "Goto Jump",
+            "input": 0,
+            "test": lambda n: simulator.executeProgram(goto_jump, [0])[0],
+            "expected": 1,
+            "show_expectation": True
+        },
     ]
     tests["Example 1: Factorial Tests"] = [
         {
